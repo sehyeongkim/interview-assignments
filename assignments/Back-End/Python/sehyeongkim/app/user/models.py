@@ -18,6 +18,6 @@ class User(Base, TimestampMixin):
     gender = Column(String(5))
     age = Column(Integer)
     phone = Column(String(20))
-    email = Column(String(50), nullable=False)
+    email = Column(String(50), unique=True, nullable=False)
     password = Column(Text, nullable=False)
     is_admin = Column(Boolean, default=False)
