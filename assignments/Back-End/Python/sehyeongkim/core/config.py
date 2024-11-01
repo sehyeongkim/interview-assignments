@@ -8,6 +8,10 @@ class BaseConfig(BaseSettings):
     DEBUG: bool = True
 
     DB_URL: str
+    TEST_DB_URL: str
+
+    JWT_SECRET_KEY: str
+    JWT_ALGORITHM: str
 
     class Config:
         case_sensitive = False
