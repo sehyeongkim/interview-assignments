@@ -13,7 +13,7 @@ class SignUpRequestSchema(BaseModel):
 
 
 class SignInRequestSchema(BaseModel):
-    email: str = Field(..., description='이메일(아이디)')
+    email: str = Field(..., pattern=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', description='이메일(아이디)')
     password: str = Field(..., description='비밀번호')
 
 

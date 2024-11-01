@@ -23,3 +23,9 @@ class UserNotFoundException(CustomException):
     code = 404
     error_code = 'USER_NOT_FOUND'
     messsage = 'user not found'
+
+
+class PasswordDoesNotMatchException(CustomException):
+    code = 400
+    error_code = 'PASSWORD_DOES_NOT_MATCH'
+    message = 'user not found'
