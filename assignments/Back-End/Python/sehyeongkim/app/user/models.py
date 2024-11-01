@@ -21,3 +21,7 @@ class User(Base, TimestampMixin):
     email = Column(String(50), unique=True, nullable=False)
     password = Column(Text, nullable=False)
     is_admin = Column(Boolean, default=False)
+
+    @property
+    def id_str(self):
+        return str(uuid.UUID(bytes=self.id))
