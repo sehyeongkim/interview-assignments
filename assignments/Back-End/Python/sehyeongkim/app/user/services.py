@@ -39,5 +39,11 @@ class UserService:
     async def delete_user(self):
         pass
 
-    async def is_admin(self):
-        pass
+    async def is_admin(self, user_id: str) -> bool:
+        stmt = select(User).where(User.id == user_id)
+        result = await session.execute(stmt)
+        user = result.scalars().first()
+        if not user:
+            return False
+
+        return True if user.is_admin else False

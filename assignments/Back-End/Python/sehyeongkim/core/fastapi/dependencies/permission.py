@@ -22,34 +22,36 @@ class IsAuthenticated(BasePermission):
     exception = UnauthorizedException
 
     async def has_permission(self, request: Request) -> bool:
-        pass
-
-class IsOwner(BasePermission):
-    exception = ForbiddenException
-
-    async def has_permission(self, request: Request) -> bool:
-        pass
+        return request.user.id is not None
 
 
 class IsAdmin(BasePermission):
     exception = ForbiddenException
 
     async def has_permission(self, request: Request) -> bool:
-        pass
+        return await UserService().is_admin(user_id=request.user.id)
 
 
 class IsOwnerOrAdmin(BasePermission):
     exception = ForbiddenException
 
     async def has_permission(self, request: Request) -> bool:
-        pass
+        user_id = request.path_params.get('user_id', None)
+        if user_id is None:
+            return False
+
+        is_admin = await UserService().is_admin(user_id=request.user.id)
+        return True if request.user.id == user_id or is_admin else False
 
 
 class IsPostOwner(BasePermission):
     exception = ForbiddenException
 
     async def has_permission(self, request: Request) -> bool:
-        pass
+        post_id = request.path_params.get('post_id', None)
+        if post_id is None:
+            return False
+        return await PostService().is_post_owner(post_id=post_id, user_id=request.user.id)
 
 
 class PermissionDependency(SecurityBase):
