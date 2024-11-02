@@ -47,7 +47,20 @@ async def get_user(user_id: str):
     dependencies=[Depends(PermissionDependency([IsAdmin]))]
 )
 async def get_users_list():
-    pass
+    users = await UserService().get_users()
+    result = [
+        {
+            'id': user.id_str,
+            'name': user.name,
+            'gender': user.gender,
+            'age': user.age,
+            'phone': user.phone,
+            'email': user.email,
+            'is_admin': user.is_admin
+        }
+        for user in users
+    ]
+    return JSONResponse(content=jsonable_encoder(result), status_code=200)
 
 
 @user_router.put(

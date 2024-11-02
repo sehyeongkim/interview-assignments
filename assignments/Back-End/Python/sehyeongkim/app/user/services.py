@@ -1,4 +1,5 @@
 import uuid
+from typing import List
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_, select, update, delete, insert
 
@@ -41,8 +42,10 @@ class UserService:
             raise UserNotFoundException
         return user
 
-    async def get_users(self):
-        pass
+    async def get_users(self) -> List[User]:
+        stmt = select(User).where(User.deleted_at == None)
+        result = await session.execute(stmt)
+        return result.scalars().all()
 
     @Transactional()
     async def update_user(self):
