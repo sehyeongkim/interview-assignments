@@ -1,5 +1,6 @@
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+from passlib.context import CryptContext
 
 from app.user.models import User
 from app.user.services import UserService
@@ -86,9 +87,32 @@ async def test_delete_user_does_not_exist():
     pass
 
 @pytest.mark.asyncio
-async def test_is_admin():
-    pass
+async def test_is_admin(session: AsyncSession):
+    email = 'pms@gmail.com'
+    user_info = {
+        'name': '박명수',
+        'email': email,
+        'password': '1234',
+        'is_admin': True
+    }
+    session.add(User(**user_info))
+    await session.commit()
+    user = await UserService().get_user_by_email(user_email=email)
+    result = await UserService().is_admin(user_id=user.id_str)
+    assert result is True
 
 @pytest.mark.asyncio
-async def test_is_admin_user_is_not_admin():
-    pass
+async def test_is_admin_user_is_not_admin(session: AsyncSession):
+    email = 'pms@gmail.com'
+    user_info = {
+        'name': '박명수',
+        'email': email,
+        'password': '1234',
+        'is_admin': False
+    }
+    session.add(User(**user_info))
+    await session.commit()
+    user = await UserService().get_user_by_email(user_email=email)
+
+    result = await UserService().is_admin(user_id=user.id_str)
+    assert result is False
