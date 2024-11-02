@@ -2,6 +2,7 @@ from typing import List
 from sqlalchemy import or_, select, update, delete, insert
 
 from app.post.models import Post
+from app.user.services import convert_uuid
 from core.db.session import session
 from core.db.transactional import Transactional
 
@@ -11,8 +12,13 @@ class PostService:
         pass
 
     @Transactional()
-    async def insert_post(self):
-        pass
+    async def insert_post(self, user_id: str, post_info: dict) -> Post:
+        data = {**post_info, **{'user_id': convert_uuid(user_id)}}
+        post = Post(**data)
+        session.add(post)
+        await session.flush()
+        await session.refresh(post)
+        return post
 
     async def get_posts(self) -> List[Post]:
         stmt = select(Post.id,

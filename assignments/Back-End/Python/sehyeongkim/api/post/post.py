@@ -24,7 +24,9 @@ async def get_posts_list():
     dependencies=[Depends(PermissionDependency([IsAuthenticated]))]
 )
 async def create_post(request: Request, create_post_request: CreatePostRequestSchema):
-    pass
+    post_info = dict(create_post_request)
+    post = await PostService().insert_post(request.user.id, post_info)
+    return JSONResponse(content={'result': 'success', 'post_id': post.id}, status_code=200)
 
 
 @post_router.get(
