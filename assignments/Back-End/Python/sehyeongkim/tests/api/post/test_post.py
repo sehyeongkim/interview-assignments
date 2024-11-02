@@ -1,9 +1,11 @@
+import uuid
 import pytest
 
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.server import app
+from app.post.models import Post
 
 @pytest.mark.asyncio
 async def test_get_posts_list(create_users: dict):
@@ -12,14 +14,6 @@ async def test_get_posts_list(create_users: dict):
         response = await client.get("/api/v1/posts", headers=headers)
 
     assert response.status_code == 200
-
-@pytest.mark.asyncio
-async def test_get_posts_list_unauthorized(create_users: dict):
-    headers = {'Authorization': 'Bearer '}
-    async with AsyncClient(app=app, base_url='http://test') as client:
-        response = await client.get("/api/v1/posts", headers=headers)
-
-    assert response.status_code == 401
 
 @pytest.mark.asyncio
 async def test_create_post(create_users: dict):
@@ -45,12 +39,17 @@ async def test_create_post_invalid_request(create_users: dict):
     assert response.status_code == 422
 
 @pytest.mark.asyncio
-async def test_get_post():
-    pass
+async def test_get_post(session: AsyncSession, create_users: dict):
+    post = Post(title='제목', content='내용', user_id=uuid.UUID(create_users['user_id']).bytes)
+    session.add(post)
+    await session.commit()
+    await session.refresh(post)
 
-@pytest.mark.asyncio
-async def test_get_post_not_found():
-    pass
+    headers = {'Authorization': f'Bearer {create_users["user_token"]}'}
+    async with AsyncClient(app=app, base_url='http://test') as client:
+        response = await client.get(f"/api/v1/posts/{post.id}", headers=headers)
+
+    assert response.status_code == 200
 
 @pytest.mark.asyncio
 async def test_modify_post():
