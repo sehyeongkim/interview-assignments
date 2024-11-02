@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
 from app.post.schemas import CreatePostRequestSchema, GetPostResponseSchema, GetPostsListResponseSchema, ModifyPostRequestSchema
+from app.post.services import PostService
 from core.fastapi.dependencies.permission import PermissionDependency, IsPostOwner, IsAuthenticated
 
 post_router = APIRouter()
@@ -14,7 +15,8 @@ post_router = APIRouter()
     dependencies=[Depends(PermissionDependency([IsAuthenticated]))]
 )
 async def get_posts_list():
-    pass
+    result = await PostService().get_posts()
+    return JSONResponse(content=jsonable_encoder(result), status_code=200)
 
 
 @post_router.post(

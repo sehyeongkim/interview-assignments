@@ -1,3 +1,4 @@
+from typing import List
 from sqlalchemy import or_, select, update, delete, insert
 
 from app.post.models import Post
@@ -13,8 +14,14 @@ class PostService:
     async def insert_post(self):
         pass
 
-    async def get_posts(self):
-        pass
+    async def get_posts(self) -> List[Post]:
+        stmt = select(Post.id,
+                      Post.user_id,
+                      Post.title,
+                      Post.content,
+                      Post.created_at).where(Post.deleted_at==None)
+        result = await session.execute(stmt)
+        return result.scalars().all()
 
     @Transactional()
     async def update_post(self):
