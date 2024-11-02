@@ -132,8 +132,23 @@ async def test_get_user_owner_forbidden(session: AsyncSession):
     assert response.status_code == 403
 
 @pytest.mark.asyncio
-async def test_get_users_list():
-    pass
+async def test_get_users_list(session: AsyncSession):
+    data = await create_users(session)
+    headers = {'Authorization': f'Bearer {data["superuser_token"]}'}
+    async with AsyncClient(app=app, base_url='http://test') as client:
+        response = await client.get(f"/api/v1/users", headers=headers)
+
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+@pytest.mark.asyncio
+async def test_get_users_list_forbidden(session: AsyncSession):
+    data = await create_users(session)
+    headers = {'Authorization': f'Bearer {data["user_token"]}'}
+    async with AsyncClient(app=app, base_url='http://test') as client:
+        response = await client.get(f"/api/v1/users", headers=headers)
+
+    assert response.status_code == 403
 
 @pytest.mark.asyncio
 async def test_modify_user():
