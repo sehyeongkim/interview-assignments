@@ -18,6 +18,7 @@ class GetUserResponseSchema(BaseModel):
     gender: str = Field(..., description='성별')
     age: int = Field(..., description='나이')
     phone: str = Field(..., pattern=r'^010-\d{4}-\d{4}$', description='핸드폰 번호')
+    email: str = Field(..., pattern=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', description='사용자 이메일(아이디)')
     is_admin: bool = Field(..., description='관리자 여부')
 
 

@@ -29,6 +29,18 @@ class UserService:
             raise UserNotFoundException
         return user
 
+    async def get_user_by_id(self, user_id: str) -> User:
+        try:
+            stmt = select(User).where(User.id == uuid.UUID(user_id).bytes)
+            result = await session.execute(stmt)
+        except ValueError:
+            raise UserNotFoundException
+
+        user = result.scalars().first()
+        if not user:
+            raise UserNotFoundException
+        return user
+
     async def get_users(self):
         pass
 

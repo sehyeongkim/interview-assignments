@@ -28,7 +28,17 @@ async def create_user(request: Request, create_user_request: CreateUserRequestSc
     dependencies=[Depends(PermissionDependency([IsOwnerOrAdmin]))]
 )
 async def get_user(user_id: str):
-    pass
+    user = await UserService().get_user_by_id(user_id=user_id)
+    result = {
+        'id': user.id_str,
+        'name': user.name,
+        'gender': user.gender,
+        'age': user.age,
+        'phone': user.phone,
+        'email': user.email,
+        'is_admin': user.is_admin
+    }
+    return JSONResponse(content=jsonable_encoder(result), status_code=200)
 
 
 @user_router.get(
