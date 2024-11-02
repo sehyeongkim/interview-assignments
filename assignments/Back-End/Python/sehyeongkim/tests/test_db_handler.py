@@ -34,6 +34,7 @@ class TestDBHandler:
                 conn.execute(text(f'DROP TABLE {table}'))
 
     def _get_all_tables(self, engine: Engine) -> list[str]:
-        inspector = inspect(engine)
-        tables = [table_name for table_name in inspector.get_table_names()]
+        with engine.connect() as conn:
+            inspector = inspect(conn)
+            tables = inspector.get_table_names()
         return tables

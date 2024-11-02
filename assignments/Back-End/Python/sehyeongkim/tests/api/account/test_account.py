@@ -7,7 +7,6 @@ from app.server import app
 from app.user.models import User
 from app.user.services import UserService
 
-crypto_context = CryptContext(schemes=['bcrypt'])
 
 @pytest.mark.asyncio
 async def test_signup():
@@ -81,7 +80,7 @@ async def test_signup_invalid_request_email_not_valid():
     assert 'message' in response.json()
 
 @pytest.mark.asyncio
-async def test_signin(session):
+async def test_signin(session, crypto_context):
     email = 'pms@gmail.com'
     password = '1234'
     user_info = {
@@ -122,7 +121,7 @@ async def test_signin_invalid_request_email_not_valid():
     assert response.status_code == 422
 
 @pytest.mark.asyncio
-async def test_signin_invalid_request_password_does_not_match(session):
+async def test_signin_invalid_request_password_does_not_match(session, crypto_context):
     email = 'pms@gmail.com'
     user_info = {
         'name': '박명수',

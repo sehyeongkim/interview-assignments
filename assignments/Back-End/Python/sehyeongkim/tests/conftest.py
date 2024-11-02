@@ -1,6 +1,7 @@
 import pytest
 import asyncio
 import pytest_asyncio
+from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker, async_scoped_session
 
 from core.config import config
@@ -21,6 +22,11 @@ def event_loop(request):
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
+
+@pytest.yield_fixture(scope='session')
+def crypto_context():
+    context = CryptContext(schemes=['bcrypt'])
+    yield context
 
 @pytest_asyncio.fixture(scope='function', autouse=True)
 async def session(mocker):
