@@ -14,6 +14,7 @@ class GetPostResponseSchema(BaseModel):
     title: str = Field(..., description='게시글 제목')
     content: str = Field(..., description='게시글 본문')
     created_at: dt.datetime = Field(..., description='게시글 게시 날짜')
+    updated_at: dt.datetime = Field(..., description='게시글 수정 날짜')
 
 
 class GetPostsListResponseSchema(BaseModel):

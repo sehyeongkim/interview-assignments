@@ -21,11 +21,7 @@ class PostService:
         return post
 
     async def get_posts(self) -> List[Post]:
-        stmt = select(Post.id,
-                      Post.user_id,
-                      Post.title,
-                      Post.content,
-                      Post.created_at).where(Post.deleted_at==None)
+        stmt = select(Post).where(Post.deleted_at==None)
         result = await session.execute(stmt)
         return result.scalars().all()
 

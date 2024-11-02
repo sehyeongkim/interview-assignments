@@ -15,7 +15,18 @@ post_router = APIRouter()
     dependencies=[Depends(PermissionDependency([IsAuthenticated]))]
 )
 async def get_posts_list():
-    result = await PostService().get_posts()
+    posts = await PostService().get_posts()
+    result = [
+        {
+            'id': post.id,
+            'user_id': post.user_id_str,
+            'title': post.title,
+            'content': post.content,
+            'created_at': post.created_at,
+            'updated_at': post.updated_at
+        }
+        for post in posts
+    ]
     return JSONResponse(content=jsonable_encoder(result), status_code=200)
 
 
