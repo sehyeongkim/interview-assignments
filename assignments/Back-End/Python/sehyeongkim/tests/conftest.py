@@ -28,6 +28,11 @@ def crypto_context():
     context = CryptContext(schemes=['bcrypt'])
     yield context
 
+@pytest.fixture(scope='function')
+def create_users():
+    data = test_db_handler.create_initial_users()
+    yield data
+
 @pytest_asyncio.fixture(scope='function', autouse=True)
 async def session(mocker):
     """ Replace the testing db with the async session """

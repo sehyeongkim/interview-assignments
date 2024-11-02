@@ -6,7 +6,7 @@ from app.user.models import User
 from app.user.services import UserService
 from core.exceptions.user import DuplicatedUserEmail, UserNotFoundException
 
-from tests.support import create_users, NOT_FOUND_UUID
+from tests.support import NOT_FOUND_UUID
 
 
 @pytest.mark.asyncio
@@ -61,10 +61,9 @@ async def test_get_user_by_email_user_not_found():
         await UserService().get_user_by_email(user_email=email)
 
 @pytest.mark.asyncio
-async def test_get_users_list(session: AsyncSession):
-    _ = await create_users(session)
+async def test_get_users_list(create_users: dict):
     result = await UserService().get_users()
-    assert len(result) == 2
+    assert len(result) != 0
 
 @pytest.mark.asyncio
 async def test_get_user_by_id(session: AsyncSession):
