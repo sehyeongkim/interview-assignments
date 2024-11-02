@@ -1,3 +1,4 @@
+import uuid
 from typing import List
 from sqlalchemy import or_, select, update, delete, insert
 
@@ -35,11 +36,18 @@ class PostService:
         return post
 
     @Transactional()
-    async def update_post(self):
-        pass
+    async def update_post(self, post_id: int, post_info: dict) -> None:
+        stmt1 = select(Post).where(Post.id == post_id, Post.deleted_at==None)
+        result = await session.execute(stmt1)
+        post = result.scalars().first()
+        if not post:
+            raise PostNotFoundException
+
+        stmt = update(Post).values(**post_info).where(Post.id == post_id)
+        await session.execute(stmt)
 
     async def is_post_owner(self, post_id: int, user_id: str) -> bool:
-        stmt = select(Post).where(Post.id == post_id, Post.user_id == user_id)
+        stmt = select(Post).where(Post.id == post_id, Post.user_id == uuid.UUID(user_id).bytes)
         result = await session.execute(stmt)
         post = result.scalars().first()
         return False if not post else True

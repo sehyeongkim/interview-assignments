@@ -63,4 +63,5 @@ async def get_post(post_id: int):
     dependencies=[Depends(PermissionDependency([IsPostOwner]))]
 )
 async def modify_post(post_id: int, modify_post_request: ModifyPostRequestSchema):
-    pass
+    await PostService().update_post(post_id=post_id, post_info=dict(modify_post_request))
+    return JSONResponse(content={'result': 'success'}, status_code=200)
