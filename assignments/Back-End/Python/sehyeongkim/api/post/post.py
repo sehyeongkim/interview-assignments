@@ -46,7 +46,16 @@ async def create_post(request: Request, create_post_request: CreatePostRequestSc
     dependencies=[Depends(PermissionDependency([IsAuthenticated]))]
 )
 async def get_post(post_id: int):
-    pass
+    post = await PostService().get_post_by_id(post_id=post_id)
+    result = {
+        'id': post.id,
+        'user_id': post.user_id_str,
+        'title': post.title,
+        'content': post.content,
+        'created_at': post.created_at,
+        'updated_at': post.updated_at
+    }
+    return JSONResponse(content=jsonable_encoder(result), status_code=200)
 
 
 @post_router.put(

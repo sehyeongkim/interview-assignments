@@ -5,6 +5,7 @@ from app.post.models import Post
 from app.user.services import convert_uuid
 from core.db.session import session
 from core.db.transactional import Transactional
+from core.exceptions.post import PostNotFoundException
 
 
 class PostService:
@@ -24,6 +25,14 @@ class PostService:
         stmt = select(Post).where(Post.deleted_at==None)
         result = await session.execute(stmt)
         return result.scalars().all()
+
+    async def get_post_by_id(self, post_id: int) -> Post:
+        stmt = select(Post).where(Post.id==post_id, Post.deleted_at==None)
+        result = await session.execute(stmt)
+        post = result.scalars().first()
+        if not post:
+            raise PostNotFoundException
+        return post
 
     @Transactional()
     async def update_post(self):
