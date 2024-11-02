@@ -6,8 +6,10 @@ from app.post.services import PostService
 from app.user.services import convert_uuid
 
 @pytest.mark.asyncio
-async def test_insert_post():
-    pass
+async def test_insert_post(create_users: dict):
+    data = {'title': '제목', 'content': '내용'}
+    result = await PostService().insert_post(create_users['user_id'], data)
+    assert isinstance(result, Post)
 
 @pytest.mark.asyncio
 async def test_get_posts_list(session: AsyncSession, create_users: dict):
