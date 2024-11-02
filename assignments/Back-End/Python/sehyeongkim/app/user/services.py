@@ -1,3 +1,4 @@
+import uuid
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_, select, update, delete, insert
 
@@ -40,7 +41,7 @@ class UserService:
         pass
 
     async def is_admin(self, user_id: str) -> bool:
-        stmt = select(User).where(User.id == user_id)
+        stmt = select(User).where(User.id == uuid.UUID(user_id).bytes)
         result = await session.execute(stmt)
         user = result.scalars().first()
         if not user:

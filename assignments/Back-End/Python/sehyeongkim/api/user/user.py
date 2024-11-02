@@ -1,9 +1,12 @@
+from passlib.context import CryptContext
+
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
+from app.user.services import UserService
 from app.user.schemas import CreateUserRequestSchema, ModifyUserRequestSchema, GetUserResponseSchema, GetUsersListResponseSchema
-from core.fastapi.dependencies.permission import PermissionDependency, IsAuthenticated, IsOwner, IsAdmin, IsOwnerOrAdmin
+from core.fastapi.dependencies.permission import PermissionDependency, IsAdmin, IsOwnerOrAdmin
 
 user_router = APIRouter()
 
@@ -13,7 +16,10 @@ user_router = APIRouter()
     dependencies=[Depends(PermissionDependency([IsAdmin]))]
 )
 async def create_user(request: Request, create_user_request: CreateUserRequestSchema):
-    pass
+    user_info = dict(create_user_request)
+    user_info['password'] = CryptContext(schemes=['bcrypt']).hash(create_user_request.password)
+    _ = await UserService().insert_user(user_info=user_info)
+    return JSONResponse(content={'result': 'success'}, status_code=200)
 
 
 @user_router.get(
