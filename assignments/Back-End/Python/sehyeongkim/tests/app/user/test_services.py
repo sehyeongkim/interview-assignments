@@ -115,12 +115,28 @@ async def test_update_user_does_not_exist():
         await UserService().update_user(user_id=NOT_FOUND_UUID, user_info={'name': 'new_name'})
 
 @pytest.mark.asyncio
-async def test_delete_user():
-    pass
+async def test_delete_user(session: AsyncSession):
+    email = 'pms@gmail.com'
+    user_info = {
+        'name': '박명수',
+        'email': email,
+        'password': '1234',
+    }
+    session.add(User(**user_info))
+    await session.commit()
+    result = await session.execute(select(User).where(User.email == email))
+    user = result.scalars().first()
+
+    await UserService().delete_user(user_id=user.id_str)
+    result = await session.execute(select(User).where(User.id==user.id))
+    deleted_user = result.scalars().first()
+
+    assert deleted_user.deleted_at != None
 
 @pytest.mark.asyncio
 async def test_delete_user_does_not_exist():
-    pass
+    with pytest.raises(UserNotFoundException):
+        await UserService().delete_user(user_id=NOT_FOUND_UUID)
 
 @pytest.mark.asyncio
 async def test_is_admin(session: AsyncSession):

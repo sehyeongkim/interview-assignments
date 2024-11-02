@@ -207,9 +207,34 @@ async def test_modify_user_forbidden(session: AsyncSession):
     assert response.status_code == 403
 
 @pytest.mark.asyncio
-async def test_delete_user():
-    pass
+async def test_delete_user_by_owner(session: AsyncSession):
+    data = await create_users(session)
+    headers = {'Authorization': f'Bearer {data["user_token"]}'}
+    async with AsyncClient(app=app, base_url='http://test') as client:
+        response = await client.delete(f"/api/v1/users/{data['user_id']}", headers=headers)
+
+    assert response.status_code == 200
 
 @pytest.mark.asyncio
-async def test_delete_user_not_found():
-    pass
+async def test_delete_user_by_admin(session: AsyncSession):
+    data = await create_users(session)
+    headers = {'Authorization': f'Bearer {data["superuser_token"]}'}
+    async with AsyncClient(app=app, base_url='http://test') as client:
+        response = await client.delete(f"/api/v1/users/{data['user_id']}", headers=headers)
+
+    assert response.status_code == 200
+
+@pytest.mark.asyncio
+async def test_delete_forbidden(session: AsyncSession):
+    email = 'pms@gmail.com'
+    session.add(User(name='박명수', email=email, password='1234'))
+    await session.commit()
+    result = await session.execute(select(User).where(User.email == email))
+    user = result.scalars().first()
+
+    data = await create_users(session)
+    headers = {'Authorization': f'Bearer {data["user_token"]}'}
+    async with AsyncClient(app=app, base_url='http://test') as client:
+        response = await client.delete(f"/api/v1/users/{user.id_str}", headers=headers)
+
+    assert response.status_code == 403
