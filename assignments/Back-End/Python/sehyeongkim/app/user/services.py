@@ -1,4 +1,5 @@
 import uuid
+import datetime as dt
 from typing import List
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_, select, update, delete, insert
@@ -62,8 +63,15 @@ class UserService:
         await session.execute(stmt)
 
     @Transactional()
-    async def delete_user(self):
-        pass
+    async def delete_user(self, user_id: str) -> None:
+        get_user_stmt = select(User).where(User.id == convert_uuid(user_id))
+        result = await session.execute(get_user_stmt)
+        user = result.scalars().first()
+        if not user:
+            raise UserNotFoundException
+
+        stmt = update(User).values(deleted_at=dt.datetime.utcnow()).where(User.id == convert_uuid(user_id))
+        await session.execute(stmt)
 
     async def is_admin(self, user_id: str) -> bool:
         stmt = select(User).where(User.id == convert_uuid(user_id))

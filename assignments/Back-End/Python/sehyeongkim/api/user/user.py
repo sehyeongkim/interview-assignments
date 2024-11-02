@@ -82,4 +82,5 @@ async def modify_user(user_id: str, modify_user_request: ModifyUserRequestSchema
     dependencies=[Depends(PermissionDependency([IsOwnerOrAdmin]))]
 )
 async def delete_user(user_id: str):
-    pass
+    await UserService().delete_user(user_id=user_id)
+    return JSONResponse(content={'result': 'success'}, status_code=200)
