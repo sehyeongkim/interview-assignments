@@ -1,4 +1,5 @@
 import pytest
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
 
@@ -63,12 +64,25 @@ async def test_get_users_list():
     pass
 
 @pytest.mark.asyncio
-async def test_get_user():
-    pass
+async def test_get_user_by_id(session: AsyncSession):
+    email = 'pms@gmail.com'
+    user_info = {
+        'name': '박명수',
+        'email': email,
+        'password': '1234'
+    }
+    session.add(User(**user_info))
+    await session.commit()
+    user = await session.execute(select(User).where(User.email == email))
+    user_id = user.scalars().first().id_str
+
+    result = await UserService().get_user_by_id(user_id=user_id)
+    assert isinstance(result, User)
 
 @pytest.mark.asyncio
-async def test_get_user_does_not_exist():
-    pass
+async def test_get_user_by_id_does_not_exist():
+    with pytest.raises(UserNotFoundException):
+        await UserService().get_user_by_id(user_id='test')
 
 @pytest.mark.asyncio
 async def test_update_user():

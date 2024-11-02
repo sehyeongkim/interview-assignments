@@ -1,6 +1,7 @@
 import pytest
 
 from httpx import AsyncClient
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.server import app
@@ -15,8 +16,8 @@ async def test_create_user(session: AsyncSession):
         'email': 'pms@gmail.com',
         'password': '1234'
     }
-    token, _ = await create_users(session)
-    headers = {'Authorization': f'Bearer {token}'}
+    data = await create_users(session)
+    headers = {'Authorization': f'Bearer {data["superuser_token"]}'}
     async with AsyncClient(app=app, base_url='http://test') as client:
         response = await client.post("/api/v1/users", headers=headers, json=body)
 
@@ -30,8 +31,8 @@ async def test_create_user_forbidden(session: AsyncSession):
         'email': 'pms@gmail.com',
         'password': '1234'
     }
-    _, token = await create_users(session)
-    headers = {'Authorization': f'Bearer {token}'}
+    data = await create_users(session)
+    headers = {'Authorization': f'Bearer {data["user_token"]}'}
     async with AsyncClient(app=app, base_url='http://test') as client:
         response = await client.post("/api/v1/users", headers=headers, json=body)
 
@@ -43,8 +44,8 @@ async def test_create_user_invalid_request_required_field_not_exists(session: As
         'email': 'pms@gmail.com',
         'password': '1234'
     }
-    token, _ = await create_users(session)
-    headers = {'Authorization': f'Bearer {token}'}
+    data = await create_users(session)
+    headers = {'Authorization': f'Bearer {data["superuser_token"]}'}
     async with AsyncClient(app=app, base_url='http://test') as client:
         response = await client.post("/api/v1/users", headers=headers, json=body)
 
@@ -58,8 +59,8 @@ async def test_create_user_invalid_request_email_not_valid(session: AsyncSession
         'email': 'pmsgmail.com',
         'password': '1234'
     }
-    token, _ = await create_users(session)
-    headers = {'Authorization': f'Bearer {token}'}
+    data = await create_users(session)
+    headers = {'Authorization': f'Bearer {data["superuser_token"]}'}
     async with AsyncClient(app=app, base_url='http://test') as client:
         response = await client.post("/api/v1/users", headers=headers, json=body)
 
@@ -74,20 +75,61 @@ async def test_create_user_invalid_request_phone_not_valid(session: AsyncSession
         'email': email,
         'password': '1234'
     }
-    token, _ = await create_users(session)
-    headers = {'Authorization': f'Bearer {token}'}
+    data = await create_users(session)
+    headers = {'Authorization': f'Bearer {data["superuser_token"]}'}
     async with AsyncClient(app=app, base_url='http://test') as client:
         response = await client.post("/api/v1/users", headers=headers, json=body)
 
     assert response.status_code == 422
 
 @pytest.mark.asyncio
-async def test_get_user():
-    pass
+async def test_get_user_by_admin(session: AsyncSession):
+    data = await create_users(session)
+    headers = {'Authorization': f'Bearer {data["superuser_token"]}'}
+    async with AsyncClient(app=app, base_url='http://test') as client:
+        response = await client.get(f"/api/v1/users/{data['user_id']}", headers=headers)
+
+    result = response.json()
+    assert response.status_code == 200
+    assert 'id' in result
+    assert 'name' in result
+    assert 'gender' in result
+    assert 'age' in result
+    assert 'phone' in result
+    assert 'email' in result
+    assert 'is_admin' in result
 
 @pytest.mark.asyncio
-async def test_get_user_not_found():
-    pass
+async def test_get_user_by_owner(session: AsyncSession):
+    data = await create_users(session)
+    headers = {'Authorization': f'Bearer {data["user_token"]}'}
+    async with AsyncClient(app=app, base_url='http://test') as client:
+        response = await client.get(f"/api/v1/users/{data['user_id']}", headers=headers)
+
+    result = response.json()
+    assert response.status_code == 200
+    assert 'id' in result
+    assert 'name' in result
+    assert 'gender' in result
+    assert 'age' in result
+    assert 'phone' in result
+    assert 'email' in result
+    assert 'is_admin' in result
+
+@pytest.mark.asyncio
+async def test_get_user_owner_forbidden(session: AsyncSession):
+    email = 'pms@gmail.com'
+    session.add(User(name='박명수', email=email, password='1234'))
+    await session.commit()
+    user = await session.execute(select(User).where(User.email == email))
+    result = user.scalars().first()
+
+    data = await create_users(session)
+    headers = {'Authorization': f'Bearer {data["user_token"]}'}
+    async with AsyncClient(app=app, base_url='http://test') as client:
+        response = await client.get(f"/api/v1/users/{result.id_str}", headers=headers)
+
+    assert response.status_code == 403
 
 @pytest.mark.asyncio
 async def test_get_users_list():

@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.user.models import User
 from core.utils.token_helper import TokenHelper
 
-async def create_users(session: AsyncSession) -> tuple:
+async def create_users(session: AsyncSession) -> dict:
     superuser_email = 'superuser@gmail.com'
     user_email = 'user@gmail.com'
     super_user = User(name='superuser',
@@ -24,4 +24,5 @@ async def create_users(session: AsyncSession) -> tuple:
     user = result2.scalars().first()
     superuser_token = TokenHelper.encode(payload={'user_id': superuser.id_str})
     user_token = TokenHelper.encode(payload={'user_id': user.id_str})
-    return superuser_token, user_token
+    return {'superuser_id': superuser.id_str, 'superuser_token': superuser_token,
+            'user_id': user.id_str, 'user_token': user_token}
