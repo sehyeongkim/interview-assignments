@@ -29,6 +29,9 @@ class IsAdmin(BasePermission):
     exception = ForbiddenException
 
     async def has_permission(self, request: Request) -> bool:
+        if request.user.id is None:
+            return False
+
         return await UserService().is_admin(user_id=request.user.id)
 
 
@@ -36,6 +39,9 @@ class IsOwnerOrAdmin(BasePermission):
     exception = ForbiddenException
 
     async def has_permission(self, request: Request) -> bool:
+        if request.user.id is None:
+            return False
+
         user_id = request.path_params.get('user_id', None)
         if user_id is None:
             return False
@@ -48,6 +54,9 @@ class IsPostOwner(BasePermission):
     exception = ForbiddenException
 
     async def has_permission(self, request: Request) -> bool:
+        if request.user.id is None:
+            return False
+
         post_id = request.path_params.get('post_id', None)
         if post_id is None:
             return False
