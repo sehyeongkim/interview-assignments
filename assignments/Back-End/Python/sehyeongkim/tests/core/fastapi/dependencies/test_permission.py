@@ -2,41 +2,43 @@ import pytest
 from fastapi import Request
 from unittest.mock import AsyncMock, Mock
 
-from core.fastapi.dependencies.permission import PermissionDependency, IsAuthenticated, IsOwner, IsAdmin, IsOwnerOrAdmin, IsPostOwner
+from core.exceptions.base import UnauthorizedException, ForbiddenException
+from core.fastapi.dependencies.permission import PermissionDependency, IsAuthenticated, IsAdmin, IsOwnerOrAdmin, IsPostOwner
 
 
 @pytest.mark.asyncio
 async def test_permission_dependency_is_authenticated():
-    pass
+    dependency = PermissionDependency(permissions=[IsAuthenticated])
+    request = AsyncMock(spec=Request)
+    request.user = Mock(id=None)
 
-@pytest.mark.asyncio
-async def test_permission_dependency_is_owner():
-    pass
-
-@pytest.mark.asyncio
-async def test_permission_dependency_is_owner_not_owner():
-    pass
+    with pytest.raises(UnauthorizedException):
+        await dependency(request=request)
 
 @pytest.mark.asyncio
 async def test_permission_dependency_is_admin():
-    pass
+    dependency = PermissionDependency(permissions=[IsAdmin])
+    request = AsyncMock(spec=Request)
+    request.user = Mock(id=None)
 
-@pytest.mark.asyncio
-async def test_permission_dependency_is_admin_not_admin():
-    pass
+    with pytest.raises(ForbiddenException):
+        await dependency(request=request)
 
 @pytest.mark.asyncio
 async def test_permission_dependency_is_owner_or_admin():
-    pass
+    dependency = PermissionDependency(permissions=[IsOwnerOrAdmin])
+    request = AsyncMock(spec=Request)
+    request.user = Mock(id=None)
 
-@pytest.mark.asyncio
-async def test_permission_dependency_is_owner_or_admin_neither():
-    pass
+    with pytest.raises(ForbiddenException):
+        await dependency(request=request)
+
 
 @pytest.mark.asyncio
 async def test_permission_dependency_is_post_owner():
-    pass
+    dependency = PermissionDependency(permissions=[IsPostOwner])
+    request = AsyncMock(spec=Request)
+    request.user = Mock(id=None)
 
-@pytest.mark.asyncio
-async def test_permission_dependency_is_post_owner_not_owner():
-    pass
+    with pytest.raises(ForbiddenException):
+        await dependency(request=request)
