@@ -151,16 +151,60 @@ async def test_get_users_list_forbidden(session: AsyncSession):
     assert response.status_code == 403
 
 @pytest.mark.asyncio
-async def test_modify_user():
-    pass
+async def test_modify_user_by_admin(session: AsyncSession):
+    new_name = 'new_name'
+    body = {'name': new_name}
+    data = await create_users(session)
+    headers = {'Authorization': f'Bearer {data["superuser_token"]}'}
+    async with AsyncClient(app=app, base_url='http://test') as client:
+        response = await client.put(f"/api/v1/users/{data['user_id']}", headers=headers, json=body)
+
+    assert response.status_code == 200
 
 @pytest.mark.asyncio
-async def test_modify_user_invalid_request():
-    pass
+async def test_modify_user_by_owner (session: AsyncSession):
+    new_name = 'new_name'
+    body = {'name': new_name}
+    data = await create_users(session)
+    headers = {'Authorization': f'Bearer {data["user_token"]}'}
+    async with AsyncClient(app=app, base_url='http://test') as client:
+        response = await client.put(f"/api/v1/users/{data['user_id']}", headers=headers, json=body)
+
+    assert response.status_code == 200
 
 @pytest.mark.asyncio
-async def test_modify_user_not_found():
-    pass
+async def test_modify_user_invalid_request(session: AsyncSession):
+    body = {'phone': '010-999-0000'}
+    data = await create_users(session)
+    headers = {'Authorization': f'Bearer {data["superuser_token"]}'}
+    async with AsyncClient(app=app, base_url='http://test') as client:
+        response = await client.put(f"/api/v1/users/{data['user_id']}", headers=headers, json=body)
+
+    assert response.status_code == 422
+
+@pytest.mark.asyncio
+async def test_modify_user_empty_request(session: AsyncSession):
+    data = await create_users(session)
+    headers = {'Authorization': f'Bearer {data["superuser_token"]}'}
+    async with AsyncClient(app=app, base_url='http://test') as client:
+        response = await client.put(f"/api/v1/users/{data['user_id']}", headers=headers, json={})
+
+    assert response.status_code == 400
+
+@pytest.mark.asyncio
+async def test_modify_user_forbidden(session: AsyncSession):
+    email = 'pms@gmail.com'
+    session.add(User(name='박명수', email=email, password='1234'))
+    await session.commit()
+    result = await session.execute(select(User).where(User.email==email))
+    user = result.scalars().first()
+
+    data = await create_users(session)
+    headers = {'Authorization': f'Bearer {data["user_token"]}'}
+    async with AsyncClient(app=app, base_url='http://test') as client:
+        response = await client.put(f"/api/v1/users/{user.id_str}", headers=headers, json={})
+
+    assert response.status_code == 403
 
 @pytest.mark.asyncio
 async def test_delete_user():

@@ -4,6 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.user.models import User
 from core.utils.token_helper import TokenHelper
 
+NOT_FOUND_UUID = '46840c26-5e38-4967-8269-92572c71f588'
+
 async def create_users(session: AsyncSession) -> dict:
     superuser_email = 'superuser@gmail.com'
     user_email = 'user@gmail.com'

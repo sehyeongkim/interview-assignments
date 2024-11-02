@@ -6,7 +6,7 @@ from app.user.models import User
 from app.user.services import UserService
 from core.exceptions.user import DuplicatedUserEmail, UserNotFoundException
 
-from tests.support import create_users
+from tests.support import create_users, NOT_FOUND_UUID
 
 
 @pytest.mark.asyncio
@@ -88,12 +88,31 @@ async def test_get_user_by_id_does_not_exist():
         await UserService().get_user_by_id(user_id='test')
 
 @pytest.mark.asyncio
-async def test_update_user():
-    pass
+async def test_update_user(session: AsyncSession):
+    email = 'pms@gmail.com'
+    user_info = {
+        'name': '박명수',
+        'email': email,
+        'password': '1234'
+    }
+    session.add(User(**user_info))
+    await session.commit()
+    result = await session.execute(select(User).where(User.email == email))
+    user = result.scalars().first()
+
+    new_name = '활명수'
+    await UserService().update_user(user_id=user.id_str, user_info={'name': new_name})
+
+    stmt = select(User).where(User.id==user.id)
+    result = await session.execute(stmt)
+    updated_user = result.scalars().first()
+
+    assert updated_user.name == new_name
 
 @pytest.mark.asyncio
 async def test_update_user_does_not_exist():
-    pass
+    with pytest.raises(UserNotFoundException):
+        await UserService().update_user(user_id=NOT_FOUND_UUID, user_info={'name': 'new_name'})
 
 @pytest.mark.asyncio
 async def test_delete_user():
