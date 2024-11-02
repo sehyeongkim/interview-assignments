@@ -1,4 +1,5 @@
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.user.models import User
 from app.user.services import UserService
@@ -21,7 +22,7 @@ async def test_insert_user():
     assert result.email == email
 
 @pytest.mark.asyncio
-async def test_insert_user_duplicated(session):
+async def test_insert_user_duplicated(session: AsyncSession):
     user_info = {
         'name': '박명수',
         'gender': '남',
@@ -36,7 +37,7 @@ async def test_insert_user_duplicated(session):
         await UserService().insert_user(user_info=user_info)
 
 @pytest.mark.asyncio
-async def test_get_user_by_email(session):
+async def test_get_user_by_email(session: AsyncSession):
     email = 'pms@gmail.com'
     user_info = {
         'name': '박명수',
