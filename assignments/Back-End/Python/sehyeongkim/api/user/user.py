@@ -7,6 +7,7 @@ from fastapi.encoders import jsonable_encoder
 from app.user.services import UserService
 from app.user.schemas import CreateUserRequestSchema, ModifyUserRequestSchema, GetUserResponseSchema, GetUsersListResponseSchema
 from core.fastapi.dependencies.permission import PermissionDependency, IsAdmin, IsOwnerOrAdmin
+from core.exceptions.user import NothingToUpdateUserInfoException
 
 user_router = APIRouter()
 
@@ -68,7 +69,12 @@ async def get_users_list():
     dependencies=[Depends(PermissionDependency([IsOwnerOrAdmin]))]
 )
 async def modify_user(user_id: str, modify_user_request: ModifyUserRequestSchema):
-    pass
+    user_info = {k: v for k, v in dict(modify_user_request).items() if v is not None}
+    if not user_info:
+        raise NothingToUpdateUserInfoException
+
+    await UserService().update_user(user_id=user_id, user_info=user_info)
+    return JSONResponse(content={'result': 'success'}, status_code=200)
 
 
 @user_router.delete(

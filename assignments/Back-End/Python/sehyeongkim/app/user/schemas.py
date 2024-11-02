@@ -31,7 +31,7 @@ class ModifyUserRequestSchema(BaseModel):
     gender: Optional[str] = Field(None, description='성별')
     age: Optional[int] = Field(None, description='나이')
     phone: Optional[str] = Field(None, pattern=r'^010-\d{4}-\d{4}$', description='핸드폰 번호')
-    is_admin: Optional[bool] = Field(False, description='관리자 여부')
+    is_admin: Optional[bool] = Field(None, description='관리자 여부')
 
 
 class ExceptionResponseSchema(BaseModel):

@@ -8,6 +8,9 @@ from core.db.session import session
 from core.db.transactional import Transactional
 from core.exceptions.user import DuplicatedUserEmail, UserNotFoundException
 
+def convert_uuid(id: str) -> bytes:
+    return uuid.UUID(id).bytes
+
 class UserService:
     def __init__(self):
         pass
@@ -32,7 +35,7 @@ class UserService:
 
     async def get_user_by_id(self, user_id: str) -> User:
         try:
-            stmt = select(User).where(User.id == uuid.UUID(user_id).bytes)
+            stmt = select(User).where(User.id == convert_uuid(user_id))
             result = await session.execute(stmt)
         except ValueError:
             raise UserNotFoundException
@@ -48,15 +51,22 @@ class UserService:
         return result.scalars().all()
 
     @Transactional()
-    async def update_user(self):
-        pass
+    async def update_user(self, user_id: str, user_info: dict) -> None:
+        stmt1 = select(User).where(User.id == convert_uuid(user_id))
+        result = await session.execute(stmt1)
+        user = result.scalars().first()
+        if not user:
+            raise UserNotFoundException
+
+        stmt = update(User).values(**user_info).where(User.id == convert_uuid(user_id))
+        await session.execute(stmt)
 
     @Transactional()
     async def delete_user(self):
         pass
 
     async def is_admin(self, user_id: str) -> bool:
-        stmt = select(User).where(User.id == uuid.UUID(user_id).bytes)
+        stmt = select(User).where(User.id == convert_uuid(user_id))
         result = await session.execute(stmt)
         user = result.scalars().first()
         if not user:

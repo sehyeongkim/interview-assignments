@@ -29,3 +29,8 @@ class PasswordDoesNotMatchException(CustomException):
     code = 400
     error_code = 'PASSWORD_DOES_NOT_MATCH'
     message = 'user not found'
+
+class NothingToUpdateUserInfoException(CustomException):
+    code = 400
+    error_code = 'NOTHING_TO_UPDATE'
+    message = 'update info does not exist'
