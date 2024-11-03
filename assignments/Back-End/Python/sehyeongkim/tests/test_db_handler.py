@@ -4,6 +4,7 @@ from sqlalchemy import select, insert, text, inspect, create_engine, Engine
 from alembic.config import Config as AlembicConfig
 
 from app.user.models import User
+from app.post.models import Post
 from core.config import config
 from core.utils.token_helper import TokenHelper
 
@@ -20,7 +21,7 @@ class TestDBHandler:
         alembic_cfg.set_main_option('sqlalchemy.url', config.TEST_DB_URL.replace('aiomysql', 'pymysql'))
         command.upgrade(alembic_cfg, 'head')
 
-    def create_initial_users(self) -> dict:
+    def init_data(self) -> dict:
         superuser_email = 'superuser@gmail.com'
         user_email = 'user@gmail.com'
 
@@ -30,9 +31,14 @@ class TestDBHandler:
             normal_user = User(name='user', email=user_email, password='1234')
             session.add(super_user)
             session.add(normal_user)
-            session.commit()
+            session.flush()
             session.refresh(super_user)
             session.refresh(normal_user)
+
+            post = Post(title='제목', content='내용', user_id=normal_user.id)
+            session.add(post)
+            session.commit()
+            session.refresh(post)
 
             user1 = session.execute(select(User).where(User.email==superuser_email))
             user2 = session.execute(select(User).where(User.email==user_email))
@@ -42,7 +48,7 @@ class TestDBHandler:
         superuser_token = TokenHelper.encode(payload={'user_id': superuser.id_str})
         user_token = TokenHelper.encode(payload={'user_id': user.id_str})
         return {'superuser_id': superuser.id_str, 'superuser_token': superuser_token,
-                'user_id': user.id_str, 'user_token': user_token}
+                'user_id': user.id_str, 'user_token': user_token, 'post_id': post.id}
 
 
     def delete_all_rows(self) -> None:

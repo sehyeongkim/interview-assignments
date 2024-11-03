@@ -28,10 +28,11 @@ def crypto_context():
     context = CryptContext(schemes=['bcrypt'])
     yield context
 
-@pytest.fixture(scope='function')
-def create_users():
-    data = test_db_handler.create_initial_users()
+@pytest.fixture(scope='function', autouse=True)
+def init():
+    data = test_db_handler.init_data()
     yield data
+    test_db_handler.delete_all_rows()
 
 @pytest_asyncio.fixture(scope='function', autouse=True)
 async def session(mocker):
@@ -42,4 +43,3 @@ async def session(mocker):
     mocker.patch('app.post.services.session', async_session)
     yield async_session
     await async_session.remove()
-    test_db_handler.delete_all_rows()

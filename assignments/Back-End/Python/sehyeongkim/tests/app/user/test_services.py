@@ -61,7 +61,7 @@ async def test_get_user_by_email_user_not_found():
         await UserService().get_user_by_email(user_email=email)
 
 @pytest.mark.asyncio
-async def test_get_users_list(create_users: dict):
+async def test_get_users_list():
     result = await UserService().get_users()
     assert len(result) != 0
 
