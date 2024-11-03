@@ -13,12 +13,13 @@ class TestDBHandler:
     __test__ = True
 
     EXCLUDE_TABLES = {'alembic_version'}
-    ENGINE = create_engine(url=config.TEST_DB_URL.replace('aiomysql', 'pymysql'))
+    TEST_DB_URL = f'mysql+pymysql://{config.DB_USER}:{config.DB_PASSWORD}@{config.DB_HOST}:{config.DB_PORT}/{config.TEST_DB_NAME}'
+    ENGINE = create_engine(url=TEST_DB_URL)
 
     def apply_alembic(self) -> None:
         alembic_cfg = AlembicConfig('alembic.ini')
         alembic_cfg.set_main_option('is_testing', 'True')
-        alembic_cfg.set_main_option('sqlalchemy.url', config.TEST_DB_URL.replace('aiomysql', 'pymysql'))
+        alembic_cfg.set_main_option('sqlalchemy.url', self.TEST_DB_URL)
         command.upgrade(alembic_cfg, 'head')
 
     def init_data(self) -> dict:

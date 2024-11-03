@@ -4,12 +4,11 @@ import pytest_asyncio
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker, async_scoped_session
 
-from core.config import config
 from tests.test_db_handler import TestDBHandler
 
 test_db_handler = TestDBHandler()
 
-async_engine = create_async_engine(config.TEST_DB_URL)
+async_engine = create_async_engine(test_db_handler.TEST_DB_URL.replace('pymysql', 'aiomysql'))
 async_session_factory = async_sessionmaker(class_=AsyncSession, bind=async_engine, expire_on_commit=False)
 
 @pytest.fixture(scope='session', autouse=True)

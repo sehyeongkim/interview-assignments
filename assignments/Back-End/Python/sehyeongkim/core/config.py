@@ -7,8 +7,12 @@ class BaseConfig(BaseSettings):
     ENV: str = 'dev'
     DEBUG: bool = True
 
-    DB_URL: str
-    TEST_DB_URL: str
+    DB_HOST: str
+    DB_PORT: str
+    DB_USER: str
+    DB_PASSWORD: str
+    DB_NAME: str
+    TEST_DB_NAME: str
 
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str

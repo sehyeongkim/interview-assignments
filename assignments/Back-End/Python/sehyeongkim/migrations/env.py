@@ -25,14 +25,17 @@ fileConfig(config.config_file_name)
 # target_metadata = mymodel.Base.metadata
 
 # For auto generate schemas
-from core.config import config as core_config
+from core.config import config as cconfig
 
 from app.post.models import Base
 from app.user.models import Base
 
 target_metadata = Base.metadata
 
-DB_URL = config.get_main_option('sqlalchemy.url') if config.get_main_option('is_testing', 'False') == 'True' else core_config.DB_URL
+if config.get_main_option('is_testing', 'False') == 'True':
+    DB_URL = config.get_main_option('sqlalchemy.url')
+else:
+    DB_URL = f'mysql+pymysql://{cconfig.DB_USER}:{cconfig.DB_PASSWORD}@{cconfig.DB_HOST}:{cconfig.DB_PORT}/{cconfig.DB_NAME}'
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -53,7 +56,7 @@ def run_migrations_offline() -> None:
 
     """
     context.configure(
-        url=DB_URL.replace('aiomysql', 'pymysql'),
+        url=DB_URL,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -71,7 +74,7 @@ def run_migrations_online() -> None:
 
     """
     connectable = create_engine(
-        DB_URL.replace("aiomysql", "pymysql"),
+        DB_URL,
         poolclass=pool.NullPool,
     )
 
